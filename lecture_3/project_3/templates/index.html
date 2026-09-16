@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Firewall Web Interface</title>
+  <style>
+    body  { font-family: sans-serif; margin: 40px; }
+    table { border-collapse: collapse; margin-top: 12px; }
+    th,td { border: 1px solid #999; padding: 6px 14px; }
+    th    { background: #eee; }
+    .ok   { color: green; }
+    .err  { color: red; }
+  </style>
+</head>
+<body>
+  <h2>Wellcome to 34359's Firewall Web Interface</h2>
+  <p>To add a new FW rule please fill in the following fields:</p>
+
+  <form method="POST" action="/add_rule">
+    IP address for Host1: <input type="text" name="ip1" placeholder="e.g. 10.0.0.1"><br><br>
+    IP address for Host2: <input type="text" name="ip2" placeholder="e.g. 10.0.0.3"><br><br>
+    <input type="submit" value="Submit New FW Rule">
+  </form>
+
+  {% if message %}<p><b>{{ message }}</b></p>{% endif %}
+
+  <h3>Applied Firewall Rules</h3>
+  {% if rules %}
+  <table>
+    <tr><th>#</th><th>Host 1 IP</th><th>Host 2 IP</th><th>Status</th></tr>
+    {% for r in rules %}
+    <tr>
+      <td>{{ loop.index }}</td><td>{{ r.ip1 }}</td>
+      <td>{{ r.ip2 }}</td>
+      <td class="{{ 'ok' if r.ok else 'err' }}">{{ r.status }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}<p>No rules yet.</p>{% endif %}
+</body></html>

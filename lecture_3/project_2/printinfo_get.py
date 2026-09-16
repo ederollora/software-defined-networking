@@ -15,11 +15,18 @@ print(f"Response code: {response.status_code}")   # 200
 
 input("Press Enter to continue to next command...")
 
+
+print(response.text)
+input("Press Enter to continue to next command...")
+print("\n" * 3)
 dict_data = response.json()        # Python JSON (text) to  dict
 print(dict_data)
+input("Press Enter to continue to next command...")
 print("\n" * 3)
 print(dict_data["devices"])         # list of devices
+input("Press Enter to continue to next command...")
 print("\n" * 3)
 print(dict_data["devices"][0])
+input("Press Enter to continue to next command...")
 print("\n" * 3)
 print(dict_data["devices"][0]["id"]) # "of:0000000000000001

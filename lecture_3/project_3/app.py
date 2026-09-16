@@ -1,23 +1,30 @@
-from flask import Flask
-from datetime import datetime
+from flask import Flask, request, render_template
+from onos.flows import install_firewall_rule
 
 app = Flask(__name__)
+firewall_rules: list[dict] = []
 
-@app.route("/", methods=["GET"]) # http//localhost:8080/
-def get_time():
-    current_time = datetime.now()
 
-    return f"""
-    <html>
-        <head>
-            <title>Time Application</title>
-        </head>
-        <body>
-            <h1>Current Time</h1>
-            <p>{current_time.strftime('%H:%M:%S')}</p>
-        </body>
-    </html>
-    """
+@app.get("/")
+def index():
+    return render_template("index.html", rules=firewall_rules, message=None)
+
+
+@app.post("/add_rule")
+def add_rule():
+    ip1 = request.form.get("ip1", "").strip()
+    ip2 = request.form.get("ip2", "").strip()
+
+    if not ip1 or not ip2:
+        return render_template("index.html", rules=firewall_rules,
+                               message="⚠ Both IP addresses are required."), 400
+
+    ok, status = install_firewall_rule(ip1, ip2)
+    firewall_rules.append({"ip1": ip1, "ip2": ip2, "ok": ok, "status": status})
+
+    return render_template("index.html", rules=firewall_rules,
+                           message=f"Rule {ip1} ↔ {ip2}: {status}")
+
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=8011)
+    app.run(host="127.0.0.1", port=8090, debug=True)
