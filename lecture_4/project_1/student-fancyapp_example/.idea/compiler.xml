@@ -2,7 +2,7 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <annotationProcessing>
-      <profile name="Annotation profile for student-fancyApp" enabled="true">
+      <profile name="Annotation profile for student-fancyapp" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -33,13 +33,13 @@
           <entry name="$MAVEN_REPOSITORY$/com/google/errorprone/error_prone_annotations/2.3.4/error_prone_annotations-2.3.4.jar" />
           <entry name="$MAVEN_REPOSITORY$/com/google/protobuf/protobuf-java/3.4.0/protobuf-java-3.4.0.jar" />
         </processorPath>
-        <module name="student-fancyApp" />
+        <module name="student-fancyapp" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="student-fancyApp" options="-XDcompilePolicy=simple -Xplugin:ErrorProne -Xlint:unchecked" />
+      <module name="student-fancyapp" options="-XDcompilePolicy=simple -Xplugin:ErrorProne -Xlint:unchecked" />
     </option>
   </component>
 </project>
