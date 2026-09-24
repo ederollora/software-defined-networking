@@ -110,25 +110,25 @@ public class AppComponent {
             if (ethPkt.getEtherType() == Ethernet.TYPE_IPV4) {
                 TrafficTreatment.Builder treatmentBuilder = DefaultTrafficTreatment.builder();
                 PortNumber outPort = null;
-                log.info("Forwarding source MAC"+ethPkt.getDestinationMAC().toString());
+                log.info("Forwarding source MAC"+ethPkt.getSourceMAC().toString());
                 log.info("Forwarding dest MAC"+ethPkt.getDestinationMAC().toString());
 
                 if (ethPkt.getSourceMAC().toString().equals(STRING_SOMETHING) &&
                         ethPkt.getDestinationMAC().toString().equals(STRING_SOMETHING)) {
                     log.info("Forwarding packet to H_SOMETHING to H_SOMETHING");
-                    outPort = PortNumber.portNumber(INTEGER_SOMETHING);
+                    outPort = PortNumber.portNumber(LONG_SOMETHING);
                     treatmentBuilder.setOutput(outPort).build(); //this is defining the action that we want in the entry in the flow table of the switch
                 } else if
                 (ethPkt.getSourceMAC().toString().equals(STRING_SOMETHING) &&
                                 ethPkt.getDestinationMAC().toString().equals(STRING_SOMETHING)) {
                     log.info("Forwarding packet to H_SOMETHING TO H_SOMETHING");
-                    outPort = PortNumber.portNumber(INTEGER_SOMETHING);
+                    outPort = PortNumber.portNumber(LONG_SOMETHING);
                     treatmentBuilder.setOutput(outPort).build(); //this is defining the action that we want in the entry in the flow table of the switch
                 } else if
                 (ethPkt.getSourceMAC().toString().equals(STRING_SOMETHING) &&
                                 ethPkt.getDestinationMAC().toString().equals(STRING_SOMETHING)) {
                     log.info("Forwarding packet to H_SOMETHING to H_SOMETHING");
-                    outPort = PortNumber.portNumber(INTEGER_SOMETHING);
+                    outPort = PortNumber.portNumber(LONG_SOMETHING);
                     treatmentBuilder.setOutput(outPort).build(); //this is defining the action that we want in the entry in the flow table of the switch
 
                 }else if (ethPkt.getSourceMAC().toString().equals(STRING_SOMETHING) &&
@@ -140,7 +140,7 @@ public class AppComponent {
                 (ethPkt.getSourceMAC().toString().equals(STRING_SOMETHING) &&
                                 ethPkt.getDestinationMAC().toString().equals(STRING_SOMETHING)) {
                     log.info("Forwarding packet to H_SOMETHING TO H_SOMETHING");
-                    outPort = PortNumber.portNumber(INTEGER_SOMETHING);
+                    outPort = PortNumber.portNumber(LONG_SOMETHING);
                     treatmentBuilder.setOutput(outPort).build(); //this is defining the action that we want in the entry in the flow table of the switch
                 } else if
                 (ethPkt.getSourceMAC().toString().equals(STRING_SOMETHING) &&
