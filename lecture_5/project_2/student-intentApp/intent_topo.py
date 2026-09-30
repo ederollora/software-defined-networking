@@ -84,7 +84,7 @@ def perfTest():
     switches[1].setMAC("00:00:00:02:00:03", intf='s2-eth3')
 
     net.start()
-    print "Dumping host connections"
+    print("Dumping host connections")
     dumpNodeConnections(net.hosts)
     dumpNetConnections(net)
     CLI(net)
@@ -97,3 +97,4 @@ if __name__ == '__main__':
     '''
     setLogLevel('info')   
     perfTest()
+
