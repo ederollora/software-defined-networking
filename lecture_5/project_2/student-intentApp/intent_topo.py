@@ -1,100 +1,106 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
-from mininet.topo import Topo
 from mininet.net import Mininet
-from mininet.node import OVSSwitch
-from mininet.node import CPULimitedHost
-from mininet.link import TCLink
-from mininet.util import dumpNodeConnections
-from mininet.util import dumpNetConnections
-from mininet.log import setLogLevel
+from mininet.node import RemoteController, OVSSwitch
 from mininet.cli import CLI
-from mininet.node import RemoteController
+from mininet.log import setLogLevel, info
 
 
-'''
-This is the script to creat the topology for the firewall exercise in Lecture 3 from the 34359 SDN course
+def run():
 
-'''
+    net = Mininet(
+        controller=None,
+        switch=OVSSwitch,
+        autoSetMacs=True,
+        build=False
+    )
 
-class MyTopo(Topo):
-      
-    def __init__(self, **opts):
-        Topo.__init__(self, **opts)
+    info("*** Adding ONOS controller\n")
+    c0 = net.addController(
+        name='c0',
+        controller=RemoteController,
+        ip='127.0.0.1',
+        port=6653
+    )
 
-        switches=[]
-        hosts = []
+    info("*** Adding switches\n")
 
-        for i in range(2):
-            #switches.append(self.addSwitch('s'+str(i + 1)))
-            switches.append(self.addSwitch('s'+str(i + 1), cls = OVSSwitch, protocols='OpenFlow13'))
-            
-        for i in range(4):
-            hosts.append(self.addHost('h'+str(i+1)))     
+    s1 = net.addSwitch(
+        's1',
+        dpid='0000000000000001',
+        protocols='OpenFlow13'
+    )
 
-        self.addLink(switches[0], switches[1],bw=100, max_queue_size=1000) 
-        
-        self.addLink(switches[0], hosts[0], bw=100, max_queue_size=1000) 
-        self.addLink(switches[0], hosts[1], bw=100, max_queue_size=1000) 
+    s2 = net.addSwitch(
+        's2',
+        dpid='0000000000000002',
+        protocols='OpenFlow13'
+    )
 
-        self.addLink(switches[1], hosts[2], bw=100, max_queue_size=1000)
-        self.addLink(switches[1], hosts[3], bw=100, max_queue_size=1000) 
+    s3 = net.addSwitch(
+        's3',
+        dpid='0000000000000003',
+        protocols='OpenFlow13'
+    )
 
-        
+    s4 = net.addSwitch(
+        's4',
+        dpid='0000000000000004',
+        protocols='OpenFlow13'
+    )
 
-topos = { 'mytopo': ( lambda: MyTopo() ) }  # this makes it possible to run the mininet with the parameter "--topo mytopo"
+    info("*** Adding hosts\n")
 
+    h1 = net.addHost(
+        'h1',
+        ip='10.0.0.1/24',
+        mac='00:00:00:00:00:01'
+    )
 
+    h2 = net.addHost(
+        'h2',
+        ip='10.0.0.2/24',
+        mac='00:00:00:00:00:02'
+    )
 
+    info("*** Adding host links\n")
 
-class ONOSController (RemoteController):
+    net.addLink(h1, s1)
+    net.addLink(h2, s4)
 
-    def __init__ (self):
-        RemoteController.__init__(self,'ONOSController','127.0.0.1',6633)
+    info("*** Adding switch links\n")
 
+    # Upper path
+    net.addLink(s1, s2)
+    net.addLink(s2, s4)
 
-controllers={'onos': ONOSController}   # this makes it possible to run mininet with the parameter "--controller onos"
+    # Lower path
+    net.addLink(s1, s3)
+    net.addLink(s3, s4)
 
-def perfTest():
-    '''
-    This function runs only when executing the script with python: "sudo python topo_one.py"
-    If instead the script is executed like "sudo mn --custom topo_one.py ...." then you can only use the options added to "topos" and "controllers" list, by specifying parameters to the "sudo mn" command.
-    '''
-    topo = MyTopo()
-        
-    net = Mininet(topo=topo,controller=None,link=TCLink, listenPort=6634)
-   
-    c0 = ONOSController()
-    net.addController(c0)   
+    info("*** Building network\n")
+    net.build()
 
-   
-    hosts = net.hosts
-    hosts[0].setMAC("00:00:00:00:00:01", intf='h1-eth0')
-    hosts[1].setMAC("00:00:00:00:00:02", intf='h2-eth0')
-    hosts[2].setMAC("00:00:00:00:00:03", intf='h3-eth0')
-    hosts[3].setMAC("00:00:00:00:00:04", intf='h4-eth0')
+    info("*** Starting controller\n")
+    c0.start()
 
-    switches = net.switches
-    switches[0].setMAC("00:00:00:01:00:01", intf='s1-eth1')
-    switches[0].setMAC("00:00:00:01:00:02", intf='s1-eth2')
-    switches[0].setMAC("00:00:00:01:00:03", intf='s1-eth3')
+    info("*** Starting switches\n")
 
-    switches[1].setMAC("00:00:00:02:00:01", intf='s2-eth1')
-    switches[1].setMAC("00:00:00:02:00:02", intf='s2-eth2')
-    switches[1].setMAC("00:00:00:02:00:03", intf='s2-eth3')
+    for switch in net.switches:
+        switch.start([c0])
 
-    net.start()
-    print("Dumping host connections")
-    dumpNodeConnections(net.hosts)
-    dumpNetConnections(net)
+    info("*** Network started\n")
+    info("*** Two paths exist between h1 and h2:\n")
+    info("    h1 - s1 - s2 - s4 - h2\n")
+    info("    h1 - s1 - s3 - s4 - h2\n")
+
+    info("*** Opening Mininet CLI\n")
     CLI(net)
+
+    info("*** Stopping network\n")
     net.stop()
 
-if __name__ == '__main__':
-    '''
-    Whenever the script is executed with python instead of being a parameter to "sudo mn"
-    this part is executed. So the perfTest() function is called. 
-    '''
-    setLogLevel('info')   
-    perfTest()
 
+if __name__ == '__main__':
+    setLogLevel('info')
+    run()
