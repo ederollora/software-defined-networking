@@ -11,20 +11,18 @@ def run():
     net = Mininet(
         controller=None,
         switch=OVSSwitch,
-        autoSetMacs=True,
         build=False
     )
 
-    info("*** Adding ONOS controller\n")
+    # ONOS controller
     c0 = net.addController(
-        name='c0',
+        'c0',
         controller=RemoteController,
         ip='127.0.0.1',
         port=6653
     )
 
-    info("*** Adding switches\n")
-
+    # Switches
     s1 = net.addSwitch(
         's1',
         dpid='0000000000000001',
@@ -49,8 +47,7 @@ def run():
         protocols='OpenFlow13'
     )
 
-    info("*** Adding hosts\n")
-
+    # Hosts
     h1 = net.addHost(
         'h1',
         ip='10.0.0.1/24',
@@ -63,41 +60,84 @@ def run():
         mac='00:00:00:00:00:02'
     )
 
-    info("*** Adding host links\n")
+    # -------------------------------------------------
+    # Explicit port assignments
+    # -------------------------------------------------
 
-    net.addLink(h1, s1)
-    net.addLink(h2, s4)
+    # h1 -- s1
+    # s1 port 1
+    net.addLink(
+        h1, s1,
+        port2=1
+    )
 
-    info("*** Adding switch links\n")
+    # s1 -- s2
+    # s1 port 2
+    # s2 port 1
+    net.addLink(
+        s1, s2,
+        port1=2,
+        port2=1
+    )
 
-    # Upper path
-    net.addLink(s1, s2)
-    net.addLink(s2, s4)
+    # s1 -- s3
+    # s1 port 3
+    # s3 port 1
+    net.addLink(
+        s1, s3,
+        port1=3,
+        port2=1
+    )
 
-    # Lower path
-    net.addLink(s1, s3)
-    net.addLink(s3, s4)
+    # s2 -- s4
+    # s2 port 2
+    # s4 port 2
+    net.addLink(
+        s2, s4,
+        port1=2,
+        port2=2
+    )
 
+    # s3 -- s4
+    # s3 port 2
+    # s4 port 3
+    net.addLink(
+        s3, s4,
+        port1=2,
+        port2=3
+    )
+
+    # h2 -- s4
+    # s4 port 1
+    net.addLink(
+        h2, s4,
+        port2=1
+    )
+
+    # Build network
     info("*** Building network\n")
     net.build()
 
-    info("*** Starting controller\n")
+    # Start controller
+    info("*** Starting ONOS controller\n")
     c0.start()
 
+    # Start switches
     info("*** Starting switches\n")
+    for sw in net.switches:
+        sw.start([c0])
 
-    for switch in net.switches:
-        switch.start([c0])
+    info("\n*** Port mapping ***\n")
+    info("s1: 1=h1, 2=s2, 3=s3\n")
+    info("s2: 1=s1, 2=s4\n")
+    info("s3: 1=s1, 2=s4\n")
+    info("s4: 1=h2, 2=s2, 3=s3\n\n")
 
-    info("*** Network started\n")
-    info("*** Two paths exist between h1 and h2:\n")
-    info("    h1 - s1 - s2 - s4 - h2\n")
-    info("    h1 - s1 - s3 - s4 - h2\n")
+    info("*** Path 1: h1-s1-s2-s4-h2\n")
+    info("*** Path 2: h1-s1-s3-s4-h2\n\n")
 
-    info("*** Opening Mininet CLI\n")
     CLI(net)
 
-    info("*** Stopping network\n")
     net.stop()
 
 
