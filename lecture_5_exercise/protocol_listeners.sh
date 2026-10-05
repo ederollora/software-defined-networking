@@ -1,19 +1,34 @@
 #!/bin/bash
 
-echo "Starting listeners on h2..."
+echo "Starting protocol listeners on h2..."
+echo "======================================"
 
-nc -u -lk -p 53 > /tmp/udp53.log 2>&1 &
-echo "UDP/53 listener started (DNS-like)"
+echo "UDP 53  - DNS"
+nc -u -lk -p 8881 &
+PID1=$!
 
-nc -lk -p 23 > /tmp/tcp23.log 2>&1 &
-echo "TCP/23 listener started (Telnet-like)"
+echo "TCP 23  - Telnet"
+nc -lk -p 8882 &
+PID2=$!
 
-nc -lk -p 20 > /tmp/tcp22.log 2>&1 &
-echo "TCP/20 listener started (SSH-like)"
-echo "We put SSH on port 20, because SSH (default) is already listening on port 22."
+echo "TCP 22  - SSH"
+nc -lk -p 8883 &
+PID3=$!
 
-nc -u -lk -p 23 > /tmp/udp23.log 2>&1 &
-echo "UDP/23 listener started"
+echo "UDP 23"
+nc -u -lk -p 8884
+ &
+PID4=$!
 
 echo
-echo "All listeners started."
+echo "Listeners started."
+echo "UDP/53  PID: $PID1"
+echo "TCP/23  PID: $PID2"
+echo "TCP/22  PID: $PID3"
+echo "UDP/23  PID: $PID4"
+echo
+echo "Press Ctrl+C to stop all listeners."
+
+trap 'kill $PID1 $PID2 $PID3 $PID4 2>/dev/null; exit' INT TERM
+
+wait

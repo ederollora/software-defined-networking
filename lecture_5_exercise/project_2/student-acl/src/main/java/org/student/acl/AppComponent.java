@@ -94,14 +94,16 @@ public class AppComponent {
 
         appId = coreService.registerApplication("org.student.acl");
 
+        // Register the packet processor for the reactive ACL
         packetService.addProcessor(
                 processor,
                 PacketProcessor.director(1)
         );
 
-        /*
-         * Reactive ACL rules.
-         */
+        // Register the host listener so newly discovered hosts are detected
+        hostService.addListener(hostListener);
+
+        // Define/request the reactive ACL rules
         defineAclRules();
 
         log.info("===== ACL APPLICATION STARTED =====");
@@ -112,20 +114,26 @@ public class AppComponent {
     @Deactivate
     protected void deactivate() {
 
+        // Stop receiving packets requested for the reactive ACL
         for (TrafficSelector selector : aclRules) {
             packetService.cancelPackets(
                     selector,
-                    PacketPriority.REACTIVE,
+                    PacketPriority.CONTROL,
                     appId
             );
         }
 
+        // Remove all flow rules installed by this application
         flowRuleService.removeFlowRulesById(appId);
+
+        // Unregister the packet processor
         packetService.removeProcessor(processor);
+
+        // Unregister the host listener
         hostService.removeListener(hostListener);
 
-        log.info("Stopped");
-    }
+        log.info("===== ACL APPLICATION STOPPED =====");
+        }
 
 
     /**
@@ -155,7 +163,7 @@ public class AppComponent {
         );
 
         selectorBuilder.matchTcpDst(
-                TpPort.tpPort(23)
+                TpPort.tpPort(8882)
         );
 
         TrafficSelector aclSelector =
@@ -207,13 +215,16 @@ public class AppComponent {
                 return;
             }
 
-
             for (IpAddress ip : host.ipAddresses()) {
+
                 log.info("Host IP: {}", ip);
-                /*
-                 * Install proactive TCP/22 DROP rule.
-                 */
-                addProactiveAclRule(ip);
+
+                if (ip.equals(IpAddress.valueOf("10.0.0.4"))) {
+
+                    log.info("New host 10.0.0.4 detected!");
+
+                    addProactiveAclRule(ip);
+                }
             }
         }
     }
@@ -227,7 +238,7 @@ public class AppComponent {
      * IPv4
      * destination = discovered host
      * protocol = TCP
-     * destination port = 22
+     * destination port = 8883
      * action = DROP
      */
     private void addProactiveAclRule(
@@ -277,7 +288,7 @@ public class AppComponent {
              * Block SSH / TCP destination port 22.
              */
             selectorBuilder.matchTcpDst(
-                    TpPort.tpPort(20)
+                    TpPort.tpPort(8883)
             );
             TrafficSelector selector =
                     selectorBuilder.build();
@@ -306,7 +317,7 @@ public class AppComponent {
                                     ForwardingObjective.Flag.VERSATILE
                             )
                             .fromApp(appId)
-                            .makePermanent()
+                            .makeTemporary(10000)
                             .add();
 
 
@@ -322,7 +333,7 @@ public class AppComponent {
             );
 
             log.info(
-                    "Lifetime: 60 seconds"
+                    "Lifetime: Permanent"
             );
 
             log.info(
@@ -472,7 +483,8 @@ public class AppComponent {
                                     ForwardingObjective.Flag.VERSATILE
                             )
                             .fromApp(appId)
-                            .makePermanent()
+                            .makeTemporary(10000)
+                           //.makePermanent()
                             .add();
 
 
@@ -493,7 +505,7 @@ public class AppComponent {
             );
 
             log.info(
-                    "Priority: 1000"
+                    "Priority: 10000"
             );
 
             log.info(

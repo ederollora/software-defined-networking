@@ -82,6 +82,13 @@ public class AppComponent {
         aclRules.add(selectorBuilder.build());
 
         //Put here the ICMP traffic new rule to block ICMP traffic
+
+        TrafficSelector.Builder icmpSelector =
+                DefaultTrafficSelector.builder();
+        icmpSelector.matchEthType(Ethernet.TYPE_IPV4);
+        icmpSelector.matchIPProtocol(IPv4.PROTOCOL_ICMP);
+        aclRules.add(icmpSelector.build());
+
     }
 
     /**

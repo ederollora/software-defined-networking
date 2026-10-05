@@ -9,54 +9,40 @@ fi
 
 TARGET="$1"
 
-echo "Testing client traffic to $TARGET"
+echo "Testing traffic to $TARGET"
 echo "========================================"
 
 echo
-echo "[1] DNS - UDP port 53"
-echo "test" | nc -u -w 2 "$TARGET" 53
-
-if [ $? -eq 0 ]; then
-    echo "UDP/53 packet sent successfully"
-else
-    echo "UDP/53 failed"
-fi
+echo "[1] DNS-like traffic - UDP destination port 53"
+echo "DNS TEST" | nc -u -w 2 "$TARGET" 8881
+echo "UDP/53 packet sent."
+echo "Check h2 to confirm whether it was actually received."
 
 echo
-echo "[2] Telnet - TCP port 23"
-nc -vz -w 3 "$TARGET" 23
-RESULT=$?
+echo "[2] Telnet-like traffic - TCP destination port 23"
+echo "TELNET TEST" | nc -w 3 "$TARGET" 8882
 
-if [ $RESULT -eq 0 ]; then
+if [ $? -eq 0 ]; then
     echo "TCP/23 CONNECTED"
-elif [ $RESULT -eq 1 ]; then
-    echo "TCP/23 FAILED - blocked, closed, refused, or timed out"
 else
-    echo "TCP/23 FAILED"
+    echo "TCP/23 FAILED - blocked, refused, or timed out"
 fi
 
 echo
-echo "[3] SSH - TCP port 20"
-nc -vz -w 3 "$TARGET" 20
-RESULT=$?
-
-if [ $RESULT -eq 0 ]; then
-    echo "TCP/20 CONNECTED"
-elif [ $RESULT -eq 1 ]; then
-    echo "TCP/20 FAILED - blocked, closed, refused, or timed out"
-else
-    echo "TCP/20 FAILED"
-fi
-
-echo
-echo "[4] UDP port 23"
-echo "test" | nc -u -w 2 "$TARGET" 23
+echo "[3] SSH-like traffic - TCP destination port 22"
+echo "SSH TEST" | nc -w 3 "$TARGET" 8883
 
 if [ $? -eq 0 ]; then
-    echo "UDP/23 packet sent successfully"
+    echo "TCP/22 CONNECTED"
 else
-    echo "UDP/23 failed"
+    echo "TCP/22 FAILED - blocked, refused, or timed out"
 fi
+
+echo
+echo "[4] UDP destination port 23"
+echo "UDP/23 TEST" | nc -u -w 2 "$TARGET" 8884
+echo "UDP/23 packet sent."
+echo "Check h2 to confirm whether it was actually received."
 
 echo
 echo "========================================"
